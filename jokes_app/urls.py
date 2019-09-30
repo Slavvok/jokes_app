@@ -4,10 +4,10 @@ from .views import *
 
 urlpatterns = [
     path('generate-joke', generate_joke, name='generate_joke'),
-    path('get-joke', get_joke, name='get_joke'),
+    path('get-joke/<int:pk>', get_joke, name='get_joke'),
     path('get-jokes-list', get_jokes_list, name='get_jokes_list'),
-    path('update-joke', update_joke, name='update_joke'),
-    path('remove-joke', remove_joke, name='remove_joke'),
-    path('login', user_login, name='login'),
-    path('logout', user_logout, name='logout')
+    path('update-joke/<int:pk>', update_joke, name='update_joke'),
+    path('remove-joke/<int:pk>', remove_joke, name='remove_joke'),
+    path('auth/login', user_login, name='login'),
+    path('auth/logout', user_logout, name='logout')
 ]
