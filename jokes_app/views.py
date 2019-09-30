@@ -25,11 +25,11 @@ def generate_joke(request):
 
 
 @csrf_exempt
-def get_joke(request):
+def get_joke(request, pk):
     if request.user.is_authenticated:
-        id = request.POST['id']
+        # id = request.POST['id']
         logging(request)
-        joke = Joke.objects.filter(id=id, added_by=request.user)
+        joke = Joke.objects.filter(id=pk, added_by=request.user)
         if joke:
             return HttpResponse(joke)
         else:
@@ -49,12 +49,12 @@ def get_jokes_list(request):
 
 
 @csrf_exempt
-def update_joke(request):
+def update_joke(request, pk):
     if request.user.is_authenticated:
         logging(request)
-        id = request.POST['id']
+        # id = request.POST['id']
         new_joke = request.POST['joke']
-        old_joke = Joke.objects.filter(id=id, added_by=request.user)
+        old_joke = Joke.objects.filter(id=pk, added_by=request.user)
         if old_joke:
             o_j = old_joke[0]
             old_joke.update(joke=new_joke)
@@ -66,11 +66,11 @@ def update_joke(request):
 
 
 @csrf_exempt
-def remove_joke(request):
+def remove_joke(request, pk):
     if request.user.is_authenticated:
         logging(request)
-        id = request.POST['id']
-        joke = Joke.objects.filter(id=id, added_by=request.user)
+        # id = request.POST['id']
+        joke = Joke.objects.filter(id=pk, added_by=request.user)
         joke_resp = joke[0]
         if joke:
             joke.delete()
