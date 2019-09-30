@@ -1,7 +1,11 @@
 # jokes_app
 
 Authentication:
-```/login /logout```
+```
+auth/login 
+auth/logout
+auth/registration
+```
 
 App endpoints: 
 ```
