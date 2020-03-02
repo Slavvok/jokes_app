@@ -18,7 +18,7 @@ class JokeTestCase(TestCase):
 
     def test_get_joke(self):
         self.create_joke()
-        response = self.client.post('/get-joke', {"id": 1})
+        response = self.client.get('/get-joke/1', {"id": 1})
         self.assertEqual(response.status_code, 200)
 
     def test_get_jokes_list(self):
@@ -27,10 +27,10 @@ class JokeTestCase(TestCase):
 
     def test_update_joke(self):
         self.create_joke()
-        response = self.client.post('/update-joke', {"id": 1, "joke": "new joke"})
+        response = self.client.post('/update-joke/1', {"id": 1, "joke": "new joke"})
         self.assertEqual(response.status_code, 200)
 
     def test_remove_joke(self):
         self.create_joke()
-        response = self.client.post('/remove-joke', {"id": 1})
+        response = self.client.post('/remove-joke/1', {"id": 1})
         self.assertEqual(response.status_code, 200)

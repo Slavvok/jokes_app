@@ -1,10 +1,11 @@
-from django.shortcuts import HttpResponse
+from django.http import HttpResponse
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http.response import Http404, JsonResponse
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.models import User
+from django.core.serializers import serialize
 import requests
 from .models import Joke
 from .utils import logging
@@ -12,46 +13,36 @@ from .utils import logging
 DUBLICATE = "Wow its a dublicate ლ(ಠ益ಠლ): "
 
 
-def generate_joke(request):
-    if request.user.is_authenticated:
+class GenerateJokeView(LoginRequiredMixin, View):
+    def get(self, request):
         r = requests.get('https://geek-jokes.sameerkumar.website/api').text
         logging(request)
         if Joke.objects.filter(joke=r, added_by=request.user).count():
             return HttpResponse(DUBLICATE + r)
         joke = Joke(joke=r)
         joke.save(request.user)
-        return HttpResponse(r)
-    else:
-        raise PermissionDenied
+        return JsonResponse({'joke': r})
 
 
-@csrf_exempt
-def get_joke(request, pk):
-    if request.user.is_authenticated:
-        # id = request.POST['id']
+class GetJokeView(LoginRequiredMixin, View):
+    def get(self, request, pk):
         logging(request)
         joke = Joke.objects.filter(id=pk, added_by=request.user)
         if joke:
             return HttpResponse(joke)
         else:
             raise Http404("No such joke")
-    else:
-        raise PermissionDenied
 
 
-@login_required
-def get_jokes_list(request):
-    if request.user.is_authenticated:
+class GetJokesListView(LoginRequiredMixin, View):
+    def get(self, request):
         logging(request)
-        resp = Joke.objects.filter(added_by=request.user)
+        resp = serialize('json', Joke.objects.filter(added_by=request.user))
         return HttpResponse(resp)
-    else:
-        raise PermissionDenied
 
 
-@csrf_exempt
-def update_joke(request, pk):
-    if request.user.is_authenticated:
+class UpdateJokeView(LoginRequiredMixin, View):
+    def post(self, request, pk):
         logging(request)
         # id = request.POST['id']
         new_joke = request.POST['joke']
@@ -59,16 +50,13 @@ def update_joke(request, pk):
         if old_joke:
             o_j = old_joke[0]
             old_joke.update(joke=new_joke)
-            return HttpResponse(f'Old joke: {o_j}\nNew joke: {new_joke}')
+            return HttpResponse(f'o: {o_j}, n: {new_joke}')
         else:
             raise Http404("No such joke")
-    else:
-        raise PermissionDenied
 
 
-@csrf_exempt
-def remove_joke(request, pk):
-    if request.user.is_authenticated:
+class RemoveJokeView(LoginRequiredMixin, View):
+    def post(self, request, pk):
         logging(request)
         # id = request.POST['id']
         joke = Joke.objects.filter(id=pk, added_by=request.user)
@@ -78,8 +66,6 @@ def remove_joke(request, pk):
         else:
             raise Http404("No such joke")
         return HttpResponse(f"Removed joke: {joke_resp}")
-    else:
-        raise PermissionDenied
 
 
 @csrf_exempt
@@ -114,3 +100,7 @@ def user_registration(request):
                                     email=email)
     if user:
         return HttpResponse(f"User {username} created")
+
+
+update_joke = csrf_exempt(UpdateJokeView.as_view())
+remove_joke = csrf_exempt(RemoveJokeView.as_view())
